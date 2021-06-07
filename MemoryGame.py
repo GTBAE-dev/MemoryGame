@@ -139,14 +139,14 @@ while running: # running == True
     ''' 3-5. 화면에 그리기 '''
     screen.fill(BLACK) # 화면 채우기(이후 그리는 것들 겹치지 않기 위함)
 
-    if click_pos: # click_pos != None
-        check_button(click_pos)
-
     if start: # start == True
         display_game_screen()
     else:
         display_start_button() # 시작 버튼 표시
     
+    if click_pos: # click_pos != None
+        check_button(click_pos)
+
     pygame.display.update() # 화면 업데이트
 
 ''' 4. 종료 '''
