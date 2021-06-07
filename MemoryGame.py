@@ -5,18 +5,44 @@ def display_start_button(): # start button 화면 표시 함수
     pygame.draw.circle(screen, WHITE, start_button.center, 60, 5) #(Surface, Color, Pos, Radius, Width) 의 circle
 
 def display_game_screen(): # game screen 표시 함수
+    global hidden
+    if not hidden:
+        elapsed_time = (pygame.time.get_ticks() - start_ticks) / 1000 # ms → s 전환
+        if elapsed_time > display_time:
+            hidden = True
     for idx, rect in enumerate(number_buttons, start = 1): # 시작 idx 1
-        pygame.draw.rect(screen, WHITE, rect)
-        cell_text = game_font.render(str(idx), True, BLACK) # idx = number
-        text_rect = cell_text.get_rect(center = rect.center) # cell_text의 rect가져오기 + center 설정
-        screen.blit(cell_text, text_rect)
+        if hidden:
+            pygame.draw.rect(screen, WHITE, rect)
+        else:
+            cell_text = game_font.render(str(idx), True, WHITE) # idx = number
+            text_rect = cell_text.get_rect(center = rect.center) # cell_text의 rect가져오기 + center 설정
+            screen.blit(cell_text, text_rect)
 
 def check_button(pos): # start_button 클릭 처리 함수(전달값: 마우스 클릭 좌표)
-    global start # 전역변수 start 사용 위한 호출
-    if start_button.collidepoint(pos): # start_button 내 pos 위치하는지 확인 
+    global start, start_ticks # 전역변수 start 사용 위한 호출
+    if start: #start == True
+        check_number_buttons(pos)
+    elif start_button.collidepoint(pos): # start_button 내 pos 위치하는지 확인 
         start = True 
+        start_ticks = pygame.time.get_ticks() # start 전환 시 tick 저장
+
+def check_number_buttons(pos):
+    global hidden
+    for button in number_buttons:
+        if button.collidepoint(pos):
+            if button == number_buttons[0]: #첫 순서 객체 클릭 시
+                print("correct")
+                del number_buttons[0] # 첫 순서 객체 삭제
+                if not hidden: 
+                    hidden = True
+            else:
+                print("wrong")
+            break # 틀리면 for 반복문 탈출
 
 def setup(level): # level에 따라 보여지는 숫자 처리 함수(전달값: level)
+    global display_time
+    display_time = 5 - (level // 3)
+    display_time = max(display_time, 1) # 하한 설정
     number_count = (level // 3) + 5
     number_count = min(number_count, 20) # 상한 설정
     shuffle_grid(number_count) # 숫자 섞는 함수
@@ -61,6 +87,10 @@ game_font = pygame.font.Font(None, 120)
 ''' 2. 게임 내 요소 '''
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+
+display_time = None # number 노출 시간 변수
+start_ticks = None # 시작 시간 호출 변수
+
 ''' 2-1. 배경 '''
 start_button = pygame.Rect(0, 0, 120, 120) # (left, top, width, height) 의 Rect
 start_button.center = (120, screen_height - 120) # start_button Rect 중심 이동 (0, 0) → (120, screen_height - 120)
@@ -71,6 +101,7 @@ number_buttons = [] # 버튼 리스트(클릭 대상)
 
 ''' 3. 메인루프(메인 이벤트 처리) '''
 start = False # 게임 화면 전환 변수(False = start screen / True = game screen)
+hidden = False # number 숨김 전환 변수(False = 노출 / True = 숨김)
 
 setup(1)
 
