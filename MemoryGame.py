@@ -3,6 +3,9 @@ from random import*
 
 def display_start_button(): # start button 화면 표시 함수
     pygame.draw.circle(screen, WHITE, start_button.center, 60, 5) #(Surface, Color, Pos, Radius, Width) 의 circle
+    msg = game_font.render(f"{curr_level}", True, WHITE) # 현재 레벨 표시
+    msg_rect = msg.get_rect(center = start_button.center)
+    screen.blit(msg, msg_rect)
 
 def display_game_screen(): # game screen 표시 함수
     global hidden
@@ -27,7 +30,7 @@ def check_button(pos): # start_button 클릭 처리 함수(전달값: 마우스 
         start_ticks = pygame.time.get_ticks() # start 전환 시 tick 저장
 
 def check_number_buttons(pos):
-    global hidden
+    global hidden, start, curr_level
     for button in number_buttons:
         if button.collidepoint(pos):
             if button == number_buttons[0]: #첫 순서 객체 클릭 시
@@ -36,8 +39,21 @@ def check_number_buttons(pos):
                 if not hidden: 
                     hidden = True
             else:
-                print("wrong")
+                game_over()
             break # 틀리면 for 반복문 탈출
+    if len(number_buttons) == 0:
+        start = False
+        hidden = False
+        curr_level += 1
+        setup(curr_level)
+
+def game_over(): # game over 처리 함수
+    global running
+    msg = game_font.render(f"YOUR LEVEL IS {curr_level}", True, WHITE)
+    msg_rect = msg.get_rect(center = (screen_width / 2, screen_height / 2))
+    screen.fill(BLACK)
+    screen.blit(msg, msg_rect)
+    running = False
 
 def setup(level): # level에 따라 보여지는 숫자 처리 함수(전달값: level)
     global display_time
@@ -96,6 +112,7 @@ start_button = pygame.Rect(0, 0, 120, 120) # (left, top, width, height) 의 Rect
 start_button.center = (120, screen_height - 120) # start_button Rect 중심 이동 (0, 0) → (120, screen_height - 120)
 ''' 2-2. 캐릭터 '''
 number_buttons = [] # 버튼 리스트(클릭 대상)
+curr_level = 1 # 시작 레벨 설정
 ''' 2-3. 무기 '''
 ''' 2-4. 적 '''
 
@@ -103,7 +120,7 @@ number_buttons = [] # 버튼 리스트(클릭 대상)
 start = False # 게임 화면 전환 변수(False = start screen / True = game screen)
 hidden = False # number 숨김 전환 변수(False = 노출 / True = 숨김)
 
-setup(1)
+setup(curr_level)
 
 running = True # 게임 실행 여부 확인 변수
 while running: # running == True 
@@ -133,4 +150,5 @@ while running: # running == True
     pygame.display.update() # 화면 업데이트
 
 ''' 4. 종료 '''
+pygame.time.delay(5000)
 pygame.quit()
